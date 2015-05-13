@@ -1,8 +1,11 @@
 import logging
 import os
+
+import numpy
 from lxml import etree
-from gensim import corpora, models
+from gensim import corpora, models, similarities
 from nltk import tokenize
+from toolz import nth
 
 logging.basicConfig(level='DEBUG')
 logger = logging.getLogger(__name__)
@@ -51,7 +54,15 @@ class ArxivAbstracts(corpora.textcorpus.TextCorpus):
     def __len__(self):
         return len(os.listdir(self.path))
 
+# Perform LSI/LSA  on TF-IDF representation of abstracts
 corpus = ArxivAbstracts('../harvest/data/')
 corpus.dictionary.filter_extremes()
 tfidf = models.tfidfmodel.TfidfModel(corpus, dictionary=corpus.dictionary)
 lsi = models.lsimodel.LsiModel(tfidf[corpus], id2word=corpus.dictionary)
+
+# Example of similarity query
+index = similarities.MatrixSimilarity(lsi[tfidf[corpus]])
+first_abstract = next(iter(corpus))
+vec_lsi = lsi[first_abstract]
+most_similar = numpy.argpartition(index[vec_lsi], -2)[-2]
+print(' '.join(nth(most_similar, corpus.get_texts())))
