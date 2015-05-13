@@ -53,4 +53,5 @@ class ArxivAbstracts(corpora.textcorpus.TextCorpus):
 
 corpus = ArxivAbstracts('../harvest/data/')
 corpus.dictionary.filter_extremes()
-lsi = models.lsimodel.LsiModel(corpus, id2word=corpus.dictionary)
+tfidf = models.tfidfmodel.TfidfModel(corpus, dictionary=corpus.dictionary)
+lsi = models.lsimodel.LsiModel(tfidf[corpus], id2word=corpus.dictionary)
